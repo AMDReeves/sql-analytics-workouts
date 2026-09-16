@@ -348,3 +348,274 @@ ORDER BY total_orders DESC;
 -- COUNT(*) would have different behavior for a NULL category group,
 -- so the appropriate COUNT expression depends on the business
 -- definition and treatment of missing category values.
+
+/* ============================================================
+   EXERCISE #19
+   Business Question:
+   What was the total Electronics revenue during February 2026?
+
+   Return one row containing the total Electronics revenue.
+   ============================================================ */
+
+SELECT SUM(revenue) AS total_electronics_revenue
+FROM orders
+WHERE order_date >= '2026-02-01'
+  AND order_date < '2026-03-01'
+  AND category = 'Electronics';
+
+
+/* ============================================================
+   EXERCISE #20
+   Business Question:
+   What was the total revenue for each category during
+   February 2026?
+
+   Sort by total revenue from highest to lowest.
+   ============================================================ */
+
+SELECT category,
+       SUM(revenue) AS total_revenue
+FROM orders
+WHERE order_date >= '2026-02-01'
+  AND order_date < '2026-03-01'
+GROUP BY category
+ORDER BY total_revenue DESC;
+
+
+/* ============================================================
+   EXERCISE #21
+   Business Question:
+   How many orders did each customer place during Q1 2026?
+
+   Sort customers by total orders from highest to lowest.
+   ============================================================ */
+
+SELECT customer_id,
+       COUNT(order_id) AS total_orders
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-04-01'
+GROUP BY customer_id
+ORDER BY total_orders DESC;
+
+
+/* ============================================================
+   EXERCISE #22
+   Business Question:
+   How many total units of each product were sold during
+   January and February 2026?
+
+   Sort by total units sold from highest to lowest.
+
+   NOTE:
+   SUM(quantity) adds the number of units.
+   COUNT(quantity) would only count non-NULL quantity records.
+   ============================================================ */
+
+SELECT product,
+       SUM(quantity) AS total_units_sold
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-03-01'
+GROUP BY product
+ORDER BY total_units_sold DESC;
+
+
+/* ============================================================
+   EXERCISE #23
+   Business Question:
+   How many orders were placed for each product during
+   March 2026?
+
+   Sort by total orders from fewest to most.
+   ============================================================ */
+
+SELECT product,
+       COUNT(order_id) AS total_orders
+FROM orders
+WHERE order_date >= '2026-03-01'
+  AND order_date < '2026-04-01'
+GROUP BY product
+ORDER BY total_orders ASC;
+
+
+/* ============================================================
+   EXERCISE #24
+   Business Question:
+   For each customer during Q1 2026, show:
+   - Number of orders placed
+   - Total units purchased
+
+   Sort by total units from highest to lowest.
+   ============================================================ */
+
+SELECT customer_id,
+       COUNT(order_id) AS total_orders,
+       SUM(quantity) AS total_units
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-04-01'
+GROUP BY customer_id
+ORDER BY total_units DESC;
+
+
+/* ============================================================
+   EXERCISE #25
+   Business Question:
+   For each category during January 2026, show:
+   - Number of orders
+   - Total revenue
+
+   Sort by total revenue from highest to lowest.
+   ============================================================ */
+
+SELECT category,
+       COUNT(order_id) AS total_orders,
+       SUM(revenue) AS total_revenue
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-02-01'
+GROUP BY category
+ORDER BY total_revenue DESC;
+
+
+/* ============================================================
+   EXERCISE #26
+   Business Question:
+   For each product during Q1 2026, show:
+   - Number of orders containing the product
+   - Total units sold
+
+   Sort by total orders from highest to lowest.
+   If tied, sort by total units sold from highest to lowest.
+   ============================================================ */
+
+SELECT product,
+       COUNT(order_id) AS total_orders,
+       SUM(quantity) AS total_units_sold
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-04-01'
+GROUP BY product
+ORDER BY total_orders DESC,
+         total_units_sold DESC;
+
+
+/* ============================================================
+   EXERCISE #27
+   Business Question:
+   For each customer during Q1 2026, show:
+   - Total revenue
+   - Total number of orders
+
+   Sort by total revenue from highest to lowest.
+   If tied, show the customer with more orders first.
+   ============================================================ */
+
+SELECT customer_id,
+       SUM(revenue) AS total_revenue,
+       COUNT(order_id) AS total_orders
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-04-01'
+GROUP BY customer_id
+ORDER BY total_revenue DESC,
+         total_orders DESC;
+
+
+/* ============================================================
+   EXERCISE #28
+   Business Question:
+   Show all orders from February and March 2026 where either:
+
+   - The order was Electronics with revenue greater than $300
+   OR
+   - The order was Furniture with at least 1 unit purchased
+     and revenue of at least $250
+
+   Sort by order date from newest to oldest.
+   ============================================================ */
+
+SELECT order_id,
+       order_date,
+       product,
+       category,
+       quantity,
+       revenue
+FROM orders
+WHERE order_date >= '2026-02-01'
+  AND order_date < '2026-04-01'
+  AND (
+      (category = 'Electronics' AND revenue > 300)
+      OR
+      (category = 'Furniture' AND quantity >= 1 AND revenue >= 250)
+  )
+ORDER BY order_date DESC;
+
+
+/* ============================================================
+   EXERCISE #29
+   Business Question:
+   For each product during January and February 2026, show:
+   - Total units sold
+   - Total revenue generated
+
+   Only include individual orders where revenue was at least $75.
+
+   Sort by total units sold from highest to lowest.
+   If tied, sort by total revenue from highest to lowest.
+
+   NOTE:
+   The $75 condition belongs in WHERE because it filters
+   individual orders BEFORE aggregation.
+   ============================================================ */
+
+SELECT product,
+       SUM(quantity) AS total_units_sold,
+       SUM(revenue) AS total_revenue
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-03-01'
+  AND revenue >= 75
+GROUP BY product
+ORDER BY total_units_sold DESC,
+         total_revenue DESC;
+
+
+/* ============================================================
+   EXERCISE #30
+   FINAL FUNDAMENTALS CHALLENGE
+
+   Business Question:
+   During Q1 2026, show the total number of orders and total
+   units purchased for each customer.
+
+   Only consider:
+   - Furniture orders with revenue of at least $200
+   OR
+   - Electronics orders where at least 2 units were purchased
+
+   Sort by total orders from highest to lowest.
+   If tied, sort by total units from highest to lowest.
+
+   NOTE:
+   COUNT(order_id) = number of qualifying orders
+   SUM(quantity)    = number of units inside those orders
+
+   "Count the bags. Sum what's inside the bags."
+   ============================================================ */
+
+SELECT customer_id,
+       COUNT(order_id) AS total_orders,
+       SUM(quantity) AS total_units
+FROM orders
+WHERE order_date >= '2026-01-01'
+  AND order_date < '2026-04-01'
+  AND (
+      (category = 'Furniture' AND revenue >= 200)
+      OR
+      (category = 'Electronics' AND quantity >= 2)
+  )
+GROUP BY customer_id
+ORDER BY total_orders DESC,
+         total_units DESC;
